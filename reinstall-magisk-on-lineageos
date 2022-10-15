@@ -65,6 +65,38 @@ get_lineageos_build_archive() {
     fi 
 }
 
+download_online_build_archive_integrity() {
+    integrity_full_string=$(curl --no-progress-meter $(get_build_url)?sha256)
+    IFS=' ' #setting space as delimiter
+    read -ra string_array <<< "$integrity_full_string" #reading as an array as tokens separated by IFS 
+    integrity_cheksum_string=${string_array[0]}
+    print_message " Downloaded integrity checksum: $integrity_cheksum_string"
+    echo $integrity_cheksum_string
+}
+
+compute_build_archive_integrity() {
+    print_message " Computing file integrity"
+    computed_integrity_full_string=$(shasum -a 256 /tmp/lineageos.zip)
+    IFS=' ' #setting space as delimiter
+    read -ra string_array <<< "$computed_integrity_full_string" #reading as an array as tokens separated by IFS
+    computed_integrity_cheksum_string=${string_array[0]}
+    print_message " Computed integrity checksum: $computed_integrity_cheksum_string"
+    echo $computed_integrity_cheksum_string
+} 
+
+verify_build_archive_integrity() {
+    downloaded_cheksum="$(download_online_build_archive_integrity)"
+    computed_checksum="$(compute_build_archive_integrity)"
+
+    if [ "$downloaded_cheksum" = "$computed_checksum" ]; 
+    then
+        print_message " [OK] Strings are equal."
+    else
+        print_message " [ERROR] Strings are not equal. Exiting."
+        exit -1
+    fi
+}
+
 get_build_url() {
     curl --no-progress-meter "$(get_device_downloads_page)" |
         grep --only-matching --ignore-case \
@@ -203,6 +235,8 @@ main() {
     check_magisk_app
     print_message "Looking for LineageOS build archive"
     get_lineageos_build_archive
+    print_message "Verify build archive file integrity"
+    verify_build_archive_integrity
     print_message "Extracting 'boot.img' from build archive in /tmp/boot.img"
     extract_boot_image
     print_message "Copying from PC to phone the boot image in /sdcard/Download/boot.img"
