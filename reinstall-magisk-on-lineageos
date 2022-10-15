@@ -33,7 +33,7 @@ check_phone_is_in_fastboot_mode() {
 }
 
 get_lineage_version() {
-    adb shell getprop ro.lineage.version | tr -d '\n'
+    adb shell getprop ro.lineage.version | tr -d '\n' | tr '[:upper:]' '[:lower:]'
 }
 
 get_device_name() {
@@ -42,6 +42,27 @@ get_device_name() {
 
 get_device_downloads_page() {
     echo "https://download.lineageos.org/$(get_device_name)"
+}
+
+get_build_archive_name() {
+    echo "lineage-$(get_lineage_version)-signed.zip"
+}
+
+get_lineageos_build_archive() {
+    print_message "Checking LineageOS build archive availability on phone"
+    build_file_path="/data/lineageos_updates/$(get_build_archive_name)"
+    if adb shell ls $build_file_path 1> /dev/null 2>&1; 
+    then
+        print_message "Found '$build_file_path'"
+        print_message "Copying '$build_file_path' to PC in /tmp/lineageos.zip"
+        adb pull $build_file_path /tmp/lineageos.zip
+    else
+        print_message "Cannot find '$build_file_path'"
+        print_message "/data/lineageos_updates/ contains:"
+        adb shell ls "/data/lineageos_updates/"
+        print_message "Downloading build archive from website $(get_build_url)"
+        download_latest_lineageos_build
+    fi 
 }
 
 get_build_url() {
@@ -180,8 +201,8 @@ main() {
     is_rooted_debugging_enabled
     print_message "Checking on phone if Magisk is installed"
     check_magisk_app
-    print_message "Downloading build archive from $(get_build_url)"
-    download_latest_lineageos_build
+    print_message "Looking for LineageOS build archive"
+    get_lineageos_build_archive
     print_message "Extracting 'boot.img' from build archive in /tmp/boot.img"
     extract_boot_image
     print_message "Copying from PC to phone the boot image in /sdcard/Download/boot.img"
