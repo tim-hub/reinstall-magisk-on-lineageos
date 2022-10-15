@@ -9,7 +9,7 @@ PHONE_ADB_SERIAL_NUMBER=paste_yours_here # The adb serial number can be found by
 export ANDROID_SERIAL=$PHONE_ADB_SERIAL_NUMBER
 
 print_message() {
-    printf "$1\n"
+    printf "$1\n" >&2
 }
 
 check_required_tools() {
