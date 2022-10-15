@@ -14,17 +14,17 @@ print_message() {
 
 check_required_tools() {
     type $REQUIRED_TOOLS_ARRAY &&
-         print_message "All tools are installed!"  || 
-         { print_message "A required tool but is not installed. Exiting."; exit 1; } 
+         print_message " [OK] All tools are installed!"  || 
+         { print_message " [ERROR] A required tool is not installed. Exiting."; exit 1; } 
 }
 
 check_phone_is_connected() {
     if ! adb devices | grep --silent "$ANDROID_SERIAL"; then
-        print_message "ERROR: phone '$ANDROID_SERIAL' is not connected"
+        print_message " [ERROR] phone '$ANDROID_SERIAL' is not connected"
         adb devices -l
         exit 1
     fi
-    print_message "Operations will be performed on:"
+    print_message " [OK] Operations will be performed on:"
     adb devices -l | grep $ANDROID_SERIAL
 }
 
@@ -49,18 +49,18 @@ get_build_archive_name() {
 }
 
 get_lineageos_build_archive() {
-    print_message "Checking LineageOS build archive availability on phone"
+    print_message " Checking LineageOS build archive availability on phone"
     build_file_path="/data/lineageos_updates/$(get_build_archive_name)"
     if adb shell ls $build_file_path 1> /dev/null 2>&1; 
     then
-        print_message "Found '$build_file_path'"
-        print_message "Copying '$build_file_path' to PC in /tmp/lineageos.zip"
+        print_message " [OK] Found '$build_file_path'"
+        print_message " Copying '$build_file_path' to PC in /tmp/lineageos.zip"
         adb pull $build_file_path /tmp/lineageos.zip
     else
-        print_message "Cannot find '$build_file_path'"
+        print_message " [WARN] Cannot find '$build_file_path'"
         print_message "/data/lineageos_updates/ contains:"
         adb shell ls "/data/lineageos_updates/"
-        print_message "Downloading build archive from website $(get_build_url)"
+        print_message " Downloading build archive from website $(get_build_url)"
         download_latest_lineageos_build
     fi 
 }
@@ -90,7 +90,7 @@ extract_boot_image() {
 }
 
 extract_boot_image_from_file_based_ota() {
-    print_message ' ERROR: the function "extract_boot_image_from_file_based_ota" is not implemented'
+    print_message ' [ERROR] the function "extract_boot_image_from_file_based_ota" is not implemented'
     exit 1
 }
 
@@ -153,7 +153,7 @@ wait_for_phone_to_be_in_fastboot() {
     until check_phone_is_in_fastboot_mode; do
 
         if ((SECONDS > 60)); then
-            print_message " Giving up and exiting."
+            print_message " [ERROR] Giving up and exiting."
             exit 2
         fi
 
