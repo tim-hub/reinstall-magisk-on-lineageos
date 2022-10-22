@@ -93,7 +93,7 @@ verify_build_archive_integrity() {
         print_message " [OK] Strings are equal."
     else
         print_message " [ERROR] Strings are not equal. Exiting."
-        exit -1
+        exit 1
     fi
 }
 
@@ -205,9 +205,13 @@ reboot_phone() {
 check_magisk_app() {
     magisk_package_name="com.topjohnwu.magisk"
     magisk_package_name_count=$(adb shell pm list packages "$magisk_package_name" | wc -l)
+    magisk_folder_ls_entry_count=$(adb shell ls /data/adb/magisk/ | wc -l)
     if [ "${magisk_package_name_count}" -eq 1 ]
     then
-        print_message " [OK] Magisk app seems to be installed on selected phone"
+        print_message " [OK] Looking for app package name (com.topjohnwu.magisk) Magisk app seems to be installed on selected phone"
+    elif [ "${magisk_folder_ls_entry_count}" -ne 0 ]
+    then
+        print_message " [OK] Looking for app folder (/data/adb/magisk/) Magisk app seems to be installed on selected phone"
     elif [ "${magisk_package_name_count}" -eq 0 ]
     then
         print_message " [ERROR] Magisk app seems not installed on selected phone. Exiting."
