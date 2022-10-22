@@ -211,12 +211,12 @@ check_magisk_app() {
     elif [ "${magisk_package_name_count}" -eq 0 ]
     then
         print_message " [ERROR] Magisk app seems not installed on selected phone. Exiting."
-        exit -1
+        exit 1
     else
         print_message " [ERROR] More than one Magisk app entry is present:" 
         adb shell pm list packages "$magisk_package_name"
         print_message "Exiting."
-        exit -1
+        exit 1
     fi
 }
 
